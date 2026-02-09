@@ -1,0 +1,128 @@
+MINISAT - GUÍA COMPLETA (TXT)
+Generado: 2026-02-09 15:20:32
+
+============================================================
+1) OBJETIVO
+============================================================
+MiniSat con AI Thinker ESP32-CAM:
+- Stream MJPEG (/stream)
+- Dashboard web sin recarga (/ + /data)
+- OLED con texto institucional
+- Sensor DHT11 (temperatura/humedad)
+- Presión mostrada como valor constante de referencia (sin sensor barométrico)
+
+============================================================
+2) COMPONENTES
+============================================================
+- AI Thinker ESP32-CAM (preferible con PSRAM)
+- Base ESP32-CAM-MB (microUSB) o FTDI
+- OLED SSD1306 128x64 I2C (0x3C)
+- DHT11
+- Capacitores recomendados: 1000µF (x2) y 100nF (x2)
+- Cables cortos para alimentación
+
+============================================================
+3) DIRECCIONES I2C VERIFICADAS
+============================================================
+- OLED: 0x3C
+
+============================================================
+4) CABLEADO
+============================================================
+OLED (I2C):
+- VCC -> 3.3V
+- GND -> GND
+- SDA -> GPIO14
+- SCL -> GPIO15
+
+DHT11:
+- VCC -> 3.3V
+- GND -> GND
+- DATA -> GPIO13
+- Si el DHT11 es sensor sin placa: añade pull-up 10k entre DATA y 3.3V.
+
+============================================================
+5) ALIMENTACIÓN Y ESTABILIDAD (LO MÁS IMPORTANTE)
+============================================================
+Problemas vistos y resueltos durante el desarrollo:
+- Brownout detector was triggered (caída de voltaje)
+- cam_hal: FB-OVF (overflow del frame buffer)
+- Lecturas NaN por picos/ruido y bloqueos
+
+Lecciones aprendidas:
+A) NO mezclar fuentes al mismo tiempo (USB + 3.3V externo) sin aislamiento.
+B) WiFi + cámara MJPEG generan picos altos de corriente.
+C) Los capacitores cerca del módulo ayudan a absorber picos.
+D) Subir el delay del stream y usar CAMERA_GRAB_LATEST reduce FB-OVF.
+
+Recomendaciones:
+- 1000µF + 100nF en 5V-GND (si alimentas por USB/5V)
+- 1000µF + 100nF en 3V3-GND
+- Cable USB corto y de buena calidad
+- Evitar hubs USB
+
+============================================================
+6) PRESIÓN DE REFERENCIA
+============================================================
+Se usa un valor constante de presión en hPa: 773.3
+Puedes ajustarlo editando en el código:
+  const float PRESION_HPA = 773.3;
+
+============================================================
+7) CÓMO USAR
+============================================================
+1) Enciende el ESP32-CAM
+2) Conéctate a la red WiFi: MiniSat / 12345678
+3) Abre en navegador: http://192.168.4.1/
+   - Stream: http://192.168.4.1/stream
+
+============================================================
+8) SUBIR A GITHUB (SIN MEZCLAR OTRO PROYECTO)
+============================================================
+IMPORTANTE: Crea una carpeta NUEVA que NO esté dentro de otra carpeta con .git.
+
+Estructura sugerida:
+MiniSat-ESP32CAM-DHT-OLED/
+  minisat_cam_dht/
+    minisat_cam_dht.ino
+  docs/
+    MiniSat_Guia.txt
+  README.md
+  LICENSE
+
+Pasos:
+1) Crea carpeta:
+   mkdir MiniSat-ESP32CAM-DHT-OLED
+   cd MiniSat-ESP32CAM-DHT-OLED
+
+2) Copia los archivos del proyecto.
+
+3) Inicializa repo:
+   git init
+   git add .
+   git commit -m "Inicial: MiniSat ESP32-CAM MJPEG + DHT + OLED"
+
+4) Crea un repo NUEVO en GitHub con nombre distinto al otro proyecto.
+   (No selecciones 'Add README' si ya tienes README local.)
+
+5) Conecta remoto y sube:
+   git branch -M main
+   git remote add origin https://github.com/TU_USUARIO/MiniSat-ESP32CAM-DHT-OLED.git
+   git push -u origin main
+
+Verificación rápida:
+- git status
+- git remote -v
+
+============================================================
+9) AJUSTES RÁPIDOS
+============================================================
+Si el video se traba:
+- Sube frameDelayMs (por ejemplo 90 o 120)
+- Sube jpeg_quality (por ejemplo 18-22)
+
+Si DHT da NaN:
+- Aumenta periodo a 2000ms
+- Añade resistencia pull-up 10k si el sensor no es módulo
+
+FIN.
