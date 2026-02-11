@@ -1,0 +1,125 @@
+MINISAT - GUÍA COMPLETA (ACTUALIZADA 2026-02-10)
+=================================================
+
+OBJETIVO
+--------
+MiniSat con AI Thinker ESP32-CAM:
+- SoftAP: SSID MiniSat / PASS 12345678
+- Stream MJPEG: /stream
+- Dashboard web sin recarga: / (HTML) + /data (JSON)
+- OLED SSD1306 128x64 I2C (0x3C) con texto y telemetría
+- Sensor DHT11 (temperatura/humedad)
+- Presión como valor constante de referencia (sin barómetro)
+
+COMPONENTES
+-----------
+- AI Thinker ESP32-CAM (preferible con PSRAM)
+- Base ESP32-CAM-MB (microUSB) o FTDI (opcional)
+- OLED SSD1306 128x64 I2C (0x3C)
+- DHT11
+- Capacitores recomendados: 1000µF (x2) y 100nF (x2)
+- Cables cortos para alimentación
+
+DIRECCIONES I2C
+---------------
+- OLED: 0x3C
+
+CABLEADO
+--------
+OLED (I2C):
+- VCC -> 3.3V
+- GND -> GND
+- SDA -> GPIO14
+- SCL -> GPIO15
+
+DHT11:
+- VCC -> 3.3V
+- GND -> GND
+- DATA -> GPIO13
+- Si el DHT11 es sensor sin placa: pull-up 10k entre DATA y 3.3V.
+
+ALIMENTACIÓN Y ESTABILIDAD (CRÍTICO)
+------------------------------------
+Problemas comunes:
+- "Brownout detector was triggered" (caída de voltaje)
+- "cam_hal: FB-OVF" (overflow del frame buffer)
+- Lecturas NaN o bloqueos
+
+Recomendaciones:
+- Alimentar con 5V/2A reales al pin 5V + GND del ESP32-CAM (o base MB con cargador de teléfono)
+- NO mezclar fuentes (USB + 5V externo) sin aislamiento
+- Cable USB corto y grueso (ideal <= 30 cm). Evitar hubs.
+- Capacitores cerca del módulo:
+  * 5V-GND: 1000µF + 100nF
+  * 3V3-GND: 1000µF + 100nF (si procede)
+- Mantener LED flash (GPIO4) en LOW para evitar picos
+- WiFi en potencia baja (WIFI_POWER_2dBm) y sleep activo
+- Iniciar WiFi primero, esperar 2s, luego iniciar cámara
+- Para diagnóstico temporal (no en producción): desactivar brownout para confirmar causa eléctrica
+
+CONFIG WIFI
+-----------
+- SoftAP SSID "MiniSat", PASS "12345678"
+- Power: WIFI_POWER_2dBm
+- Sleep: true
+- Canal fijo (1/6/11) para evitar escaneos largos e interferencias
+- Máx. conexiones: 2
+
+CÁMARA (AI Thinker)
+-------------------
+- XCLK: 20 MHz
+- pixel_format: PIXFORMAT_JPEG
+- frame_size: FRAMESIZE_QQVGA (160x120) para estabilidad
+- jpeg_quality: 16–20 (18 recomendado)
+- fb_count: 2 si hay PSRAM, 1 si no
+- grab_mode: CAMERA_GRAB_LATEST
+
+STREAMING
+---------
+- Ruta: /stream (multipart/x-mixed-replace; boundary=frame)
+- Ritmo conservador (frameDelayMs = 100 ms; subir a 120–150 si se traba)
+- Si cámara no está lista (camera_ok=false): responder 503
+
+FIRMWARE POR FASES (en /examples)
+---------------------------------
+- Fase 1: SoftAP mínimo
+- Fase 2: SoftAP + DHT + /data
+- Fase 3: + OLED
+- Fase 4: + Cámara (sin stream)
+- Fase 5: Completo (HTML, /data y /stream)
+
+RUTA PRINCIPAL
+--------------
+- /  => Dashboard (HTML con fetch a /data y /stream)
+- /data => JSON { temp, hum, pres }
+- /stream => MJPEG (si camera_ok=true)
+
+CÓMO REPLICAR EL PROYECTO
+-------------------------
+1) Cableado:
+   - OLED a 3.3V, GND, SDA=GPIO14, SCL=GPIO15
+   - DHT11 a 3.3V, GND, DATA=GPIO13 (pull-up 10k si es sensor suelto)
+2) Alimentación:
+   - 5V/2A al pin 5V + GND (o base MB con cargador bueno)
+   - 1000µF + 100nF en 5V-GND cerca del ESP32-CAM
+3) Cargar primero Fase 1 y validar SoftAP estable
+4) Ir subiendo Fase 2 → Fase 3 → Fase 4 → Fase 5
+5) Ajustar streaming:
+   - Si se traba: aumentar frameDelayMs (100→120→150)
+   - O subir jpeg_quality (18→20)
+   - Fijar canal WiFi a 1/6/11 según entorno
+6) Opcional:
+   - Desactivar PSRAM si da inestabilidad
+   - Bajar CPU a 80 MHz si los picos siguen siendo un problema
+
+NOTAS
+-----
+- Evitar mezclar microSD (GPIOs 13/14/15) si ya están usados por DHT/I2C
+- Mantener cliente /stream a una sola pestaña para pruebas
+- Documentar cambios y usar ramas Git para pruebas
+
+HISTORIAL DE DIAGNÓSTICO (RESUMEN)
+----------------------------------
+- El error inicial "Brownout..." fue por caída de voltaje al iniciar WiFi/cámara
+- Guru Meditation (StoreProhibited) se presentó en entorno límite de energía y rutas que tocaban recursos no listos
+- Se estabilizó con: WiFi primero + sleep + potencia baja + retardo antes de cámara + guardas en /stream + parámetros conservadores
