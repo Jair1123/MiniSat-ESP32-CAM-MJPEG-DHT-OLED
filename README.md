@@ -30,7 +30,7 @@ Puedes cambiarlo editando `PRESION_HPA` en el código.
 - (Recomendado) Pull-up 10k entre DATA y 3.3V si el sensor no es módulo.
 
 ## Alimentación (IMPORTANTE)
-- Usa **UNA sola fuente** a la vez. No combines USB y 3.3V externo sin aislamiento.
+- Se tiene que alimentar 5v no por 3.3v porque genera problemas al arrancar.
 - Para estabilidad, capacitores cerca del módulo:
   - 1000µF + 100nF en 5V-GND (si alimentas por 5V/USB)
   - 1000µF + 100nF en 3V3-GND
