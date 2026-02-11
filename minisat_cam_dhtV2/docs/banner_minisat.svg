@@ -1,0 +1,50 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00110f"/>
+      <stop offset="100%" stop-color="#002b22"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="360" fill="url(#g)"/>
+  <!-- Grid -->
+  <g opacity="0.1" stroke="#00ff88" stroke-width="1">
+    <path d="M0 300 L1200 300" />
+    <path d="M0 320 L1200 320" />
+    <path d="M0 340 L1200 340" />
+    <path d="M100 0 L100 360" />
+    <path d="M300 0 L300 360" />
+    <path d="M600 0 L600 360" />
+    <path d="M900 0 L900 360" />
+  </g>
+  <!-- Title -->
+  <text x="80" y="150" font-family="monospace" font-size="72" fill="#00ffaa" filter="url(#glow)">MiniSat</text>
+  <text x="80" y="205" font-family="monospace" font-size="28" fill="#aaffdd">ESP32-CAM • DHT11 • OLED • MJPEG • SoftAP</text>
+  <!-- Chip/camera icon -->
+  <g transform="translate(940,90)" fill="none" stroke="#00ff88" stroke-width="3">
+    <rect x="0" y="0" width="180" height="180" rx="20" />
+    <circle cx="90" cy="90" r="46" />
+    <circle cx="90" cy="90" r="16" fill="#00ffaa" />
+    <!-- pins -->
+    <g opacity="0.7" stroke-width="6">
+      <line x1="-20" y1="30" x2="0" y2="30"/>
+      <line x1="-20" y1="70" x2="0" y2="70"/>
+      <line x1="-20" y1="110" x2="0" y2="110"/>
+      <line x1="-20" y1="150" x2="0" y2="150"/>
+      <line x1="180" y1="30" x2="200" y2="30"/>
+      <line x1="180" y1="70" x2="200" y2="70"/>
+      <line x1="180" y1="110" x2="200" y2="110"/>
+      <line x1="180" y1="150" x2="200" y2="150"/>
+    </g>
+  </g>
+  <!-- subtitle -->
+  <text x="80" y="260" font-family="monospace" font-size="22" fill="#99ffc9" opacity="0.9">
+    v2.0.0 — Estable, modular y listo para replicar
+  </text>
+</svg>
